@@ -256,7 +256,7 @@
     // Load saved counts or fall back to CSV starting values
     let saved = {};
     try { saved = JSON.parse(localStorage.getItem('kills') || '{}'); } catch {}
-    const counts = HEROES.map(h => saved[h.id] !== undefined ? saved[h.id] : h.start);
+    const counts = HEROES.map(h => saved[h.id] !== undefined ? saved[h.id] : 0);
 
     function save() {
       const obj = {};
