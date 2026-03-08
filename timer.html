@@ -228,6 +228,24 @@
     input[type="number"]::-webkit-inner-spin-button,
     input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; appearance: none; }
     input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+
+    .infobox {
+      width: 100%;
+      max-width: 360px;
+      margin-top: 16px;
+      background: #12121a;
+      border: 1px solid #1e1e2e;
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 0.75rem;
+      color: #555;
+      line-height: 1.6;
+    }
+
+    .infobox strong {
+      color: #666;
+      font-weight: 600;
+    }
   </style>
 </head>
 <body>
@@ -244,6 +262,11 @@
     <button class="btn-action btn-pause" id="btnPause">Pause</button>
     <button class="btn-action btn-ding" id="btnDing" title="Test ding">🔔</button>
     <button class="btn-action" id="btnSetPos">Set Position</button>
+  </div>
+
+  <div class="infobox">
+    <strong>At 1 minute remaining</strong> — a ding plays, the tab title flashes, and the browser attempts to focus this window.<br>
+    Hit <strong>🔔</strong> above to preview the sound before your game starts so it doesn't catch you off guard.
   </div>
 
   <div class="set-position-panel" id="setPosPanel">
