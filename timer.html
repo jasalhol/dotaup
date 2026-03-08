@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game Timer</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0d0d14;
+      color: #e0e0e0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      padding: 32px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.1rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #666;
+      margin-bottom: 32px;
+    }
+
+    .timer-card {
+      background: #16161f;
+      border: 1px solid #1e1e2e;
+      border-radius: 16px;
+      padding: 40px 48px;
+      text-align: center;
+      width: 100%;
+      max-width: 360px;
+      margin-bottom: 24px;
+      transition: border-color 0.3s;
+    }
+
+    .timer-card.warning {
+      border-color: #c23b22;
+      box-shadow: 0 0 24px rgba(194, 59, 34, 0.15);
+    }
+
+    .timer-card.gameover {
+      border-color: #444;
+    }
+
+    .round-label {
+      font-size: 0.75rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #555;
+      margin-bottom: 20px;
+    }
+
+    .round-num {
+      color: #aaa;
+    }
+
+    .time-display {
+      font-size: 4rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: #e0e0e0;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+      margin-bottom: 16px;
+      transition: color 0.3s;
+    }
+
+    .time-display.warning {
+      color: #c23b22;
+    }
+
+    .time-display.gameover {
+      font-size: 2rem;
+      color: #555;
+      letter-spacing: 0.08em;
+    }
+
+    .total-remaining {
+      font-size: 0.8rem;
+      color: #444;
+      letter-spacing: 0.06em;
+    }
+
+    .total-remaining span {
+      color: #666;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .btn-action {
+      flex: 1;
+      padding: 10px 0;
+      border-radius: 8px;
+      border: 1px solid #2a2a3e;
+      background: #16161f;
+      color: #aaa;
+      font-size: 0.85rem;
+      cursor: pointer;
+      letter-spacing: 0.06em;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+
+    .btn-action:hover {
+      background: #1e1e2e;
+      color: #e0e0e0;
+      border-color: #3a3a50;
+    }
+
+    .btn-action.active {
+      border-color: #3a3a50;
+      color: #e0e0e0;
+    }
+
+    .btn-new-game:hover {
+      border-color: #2e6e3a;
+      color: #4caf72;
+    }
+
+    .btn-pause {
+      max-width: 80px;
+    }
+
+    .btn-ding {
+      max-width: 48px;
+      font-size: 1rem;
+    }
+
+    .set-position-panel {
+      background: #16161f;
+      border: 1px solid #1e1e2e;
+      border-radius: 12px;
+      padding: 20px 24px;
+      width: 100%;
+      max-width: 360px;
+      display: none;
+    }
+
+    .set-position-panel.open {
+      display: block;
+    }
+
+    .panel-title {
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #555;
+      margin-bottom: 16px;
+    }
+
+    .field {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .field label {
+      font-size: 0.82rem;
+      color: #666;
+    }
+
+    .field-inputs {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .field select,
+    .field input[type="number"] {
+      background: #0d0d14;
+      border: 1px solid #2a2a3e;
+      border-radius: 6px;
+      color: #e0e0e0;
+      font-size: 0.9rem;
+      padding: 5px 8px;
+      outline: none;
+      transition: border-color 0.15s;
+      text-align: center;
+    }
+
+    .field select:focus,
+    .field input[type="number"]:focus {
+      border-color: #3a3a50;
+    }
+
+    .field select { width: 60px; }
+    .field input[type="number"] { width: 48px; }
+
+    .field .sep {
+      color: #444;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .btn-start-here {
+      width: 100%;
+      margin-top: 8px;
+      padding: 10px 0;
+      border-radius: 8px;
+      border: 1px solid #2a2a3e;
+      background: #0d0d14;
+      color: #aaa;
+      font-size: 0.85rem;
+      cursor: pointer;
+      letter-spacing: 0.06em;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+
+    .btn-start-here:hover {
+      border-color: #3a3a50;
+      color: #e0e0e0;
+      background: #16161f;
+    }
+
+    /* Hide number input spinners */
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; appearance: none; }
+    input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+  </style>
+</head>
+<body>
+  <h1>Game Timer</h1>
+
+  <div class="timer-card" id="timerCard">
+    <div class="round-label" id="roundLabel">ROUND <span class="round-num" id="roundNum">1</span> OF 4</div>
+    <div class="time-display" id="timeDisplay">07:30</div>
+    <div class="total-remaining">Total remaining: <span id="totalDisplay">30:00</span></div>
+  </div>
+
+  <div class="buttons">
+    <button class="btn-action btn-new-game" id="btnNewGame">New Game</button>
+    <button class="btn-action btn-pause" id="btnPause">Pause</button>
+    <button class="btn-action btn-ding" id="btnDing" title="Test ding">🔔</button>
+    <button class="btn-action" id="btnSetPos">Set Position</button>
+  </div>
+
+  <div class="set-position-panel" id="setPosPanel">
+    <div class="panel-title">Start from mid-game</div>
+    <div class="field">
+      <label>Round</label>
+      <select id="inputRound">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Time left in round</label>
+      <div class="field-inputs">
+        <input type="number" id="inputMin" min="0" max="7" value="7">
+        <span class="sep">:</span>
+        <input type="number" id="inputSec" min="0" max="59" value="30">
+      </div>
+    </div>
+    <button class="btn-start-here" id="btnStartHere">Start from here</button>
+  </div>
+
+  <script>
+    const TOTAL_ROUNDS = 4;
+    const ROUND_SECS = 450; // 7:30
+
+    let round = 1;
+    let secsLeft = ROUND_SECS;
+    let running = false;
+    let warned = false;
+    let intervalId = null;
+    let titleFlashId = null;
+
+    // --- DOM refs ---
+    const timerCard   = document.getElementById('timerCard');
+    const roundLabel  = document.getElementById('roundLabel');
+    const roundNum    = document.getElementById('roundNum');
+    const timeDisplay = document.getElementById('timeDisplay');
+    const totalDisplay= document.getElementById('totalDisplay');
+    const btnNewGame  = document.getElementById('btnNewGame');
+    const btnPause    = document.getElementById('btnPause');
+    const btnSetPos   = document.getElementById('btnSetPos');
+    const setPosPanel = document.getElementById('setPosPanel');
+    const inputRound  = document.getElementById('inputRound');
+    const inputMin    = document.getElementById('inputMin');
+    const inputSec    = document.getElementById('inputSec');
+    const btnStartHere= document.getElementById('btnStartHere');
+
+    // --- Helpers ---
+    function fmt(secs) {
+      const m = Math.floor(secs / 60);
+      const s = secs % 60;
+      return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    }
+
+    function totalSecs() {
+      return (TOTAL_ROUNDS - round) * ROUND_SECS + secsLeft;
+    }
+
+    function render() {
+      const total = totalSecs();
+      const over = (round > TOTAL_ROUNDS || total <= 0);
+      const warn = !over && total <= 60;
+
+      timerCard.classList.toggle('warning', warn);
+      timerCard.classList.toggle('gameover', over);
+      timeDisplay.classList.toggle('warning', warn);
+      timeDisplay.classList.toggle('gameover', over);
+
+      if (over) {
+        roundLabel.textContent = '';
+        timeDisplay.textContent = 'GAME OVER';
+        totalDisplay.textContent = '00:00';
+      } else {
+        roundNum.textContent = round;
+        roundLabel.innerHTML = 'ROUND <span class="round-num">' + round + '</span> OF ' + TOTAL_ROUNDS;
+        timeDisplay.textContent = fmt(secsLeft);
+        totalDisplay.textContent = fmt(total);
+      }
+
+      btnPause.textContent = running ? 'Pause' : 'Resume';
+      btnPause.classList.toggle('active', !running);
+
+      saveState();
+    }
+
+    // --- Audio ding (Web Audio API, no external file) ---
+    function playDing() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.6);
+        gain.gain.setValueAtTime(0.6, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.8);
+      } catch (e) {}
+    }
+
+    // --- Title flash ---
+    function flashTitle() {
+      let flashes = 0;
+      const original = 'Game Timer';
+      clearInterval(titleFlashId);
+      titleFlashId = setInterval(() => {
+        document.title = flashes % 2 === 0 ? '\u23F0 1 MIN LEFT!' : original;
+        flashes++;
+        if (flashes >= 20) {
+          clearInterval(titleFlashId);
+          document.title = original;
+        }
+      }, 500);
+    }
+
+    // --- Tick ---
+    function tick() {
+      if (!running) return;
+
+      secsLeft--;
+
+      if (secsLeft < 0) {
+        round++;
+        if (round > TOTAL_ROUNDS) {
+          // Game over
+          secsLeft = 0;
+          running = false;
+          clearInterval(intervalId);
+          render();
+          return;
+        }
+        secsLeft = ROUND_SECS - 1;
+      }
+
+      const total = totalSecs();
+
+      // 1-minute warning
+      if (!warned && total === 60) {
+        warned = true;
+        playDing();
+        flashTitle();
+        try { window.focus(); } catch (e) {}
+      }
+
+      render();
+    }
+
+    function startTimer() {
+      clearInterval(intervalId);
+      running = true;
+      intervalId = setInterval(tick, 1000);
+      render();
+    }
+
+    function stopTimer() {
+      running = false;
+      clearInterval(intervalId);
+      render();
+    }
+
+    // --- New Game ---
+    btnNewGame.addEventListener('click', () => {
+      round = 1;
+      secsLeft = ROUND_SECS;
+      warned = false;
+      clearInterval(titleFlashId);
+      document.title = 'Game Timer';
+      startTimer();
+    });
+
+    // --- Pause/Resume ---
+    btnPause.addEventListener('click', () => {
+      if (round > TOTAL_ROUNDS) return;
+      if (running) stopTimer();
+      else startTimer();
+    });
+
+    // Ding button
+    document.getElementById('btnDing').addEventListener('click', playDing);
+
+    // Space bar pause/resume
+    document.addEventListener('keydown', e => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+      if (e.code === 'Space') {
+        e.preventDefault();
+        btnPause.click();
+      }
+    });
+
+    // --- Set Position panel ---
+    btnSetPos.addEventListener('click', () => {
+      setPosPanel.classList.toggle('open');
+      btnSetPos.classList.toggle('active', setPosPanel.classList.contains('open'));
+    });
+
+    btnStartHere.addEventListener('click', () => {
+      const r = parseInt(inputRound.value, 10);
+      let m = parseInt(inputMin.value, 10);
+      let s = parseInt(inputSec.value, 10);
+
+      // Clamp
+      m = Math.max(0, Math.min(7, isNaN(m) ? 7 : m));
+      s = Math.max(0, Math.min(59, isNaN(s) ? 30 : s));
+      const secs = m * 60 + s;
+      if (secs === 0 && r > TOTAL_ROUNDS) return;
+
+      round = r;
+      secsLeft = Math.min(secs, ROUND_SECS);
+      warned = totalSecs() <= 60; // don't warn if already past 1-min mark
+      clearInterval(titleFlashId);
+      document.title = 'Game Timer';
+
+      setPosPanel.classList.remove('open');
+      btnSetPos.classList.remove('active');
+      startTimer();
+    });
+
+    // --- Clamp inputs on blur ---
+    inputMin.addEventListener('blur', () => {
+      let v = parseInt(inputMin.value, 10);
+      inputMin.value = Math.max(0, Math.min(7, isNaN(v) ? 7 : v));
+    });
+    inputSec.addEventListener('blur', () => {
+      let v = parseInt(inputSec.value, 10);
+      inputSec.value = Math.max(0, Math.min(59, isNaN(v) ? 30 : v));
+    });
+
+    // --- Persist state across refreshes ---
+    function saveState() {
+      localStorage.setItem('timerState', JSON.stringify({ round, secsLeft, running, warned }));
+    }
+
+    function loadState() {
+      try {
+        const s = JSON.parse(localStorage.getItem('timerState'));
+        if (!s) return false;
+        round   = s.round   ?? 1;
+        secsLeft= s.secsLeft?? ROUND_SECS;
+        warned  = s.warned  ?? false;
+        return true;
+      } catch { return false; }
+    }
+
+    // --- Init ---
+    if (loadState()) {
+      render();
+      if (running) startTimer(); // resume if was running
+    } else {
+      render(); // show default state, not yet running
+    }
+  </script>
+</body>
+</html>
