@@ -204,7 +204,7 @@
 
     .sort-wrap {
       display: flex;
-      flex-direction: column;
+      /* keep row alignment since only button remains */
       align-items: center;
       gap: 4px;
     }
@@ -221,6 +221,12 @@
       white-space: nowrap;
     }
     #btn-sort:hover { border-color: #3a3a50; color: #aaa; }
+
+    /* label moved below controls */
+    .sort-label-wrap {
+      text-align: center;
+      margin-top: 4px;
+    }
 
     #sort-label {
       font-size: 0.65rem;
@@ -282,9 +288,11 @@
     <input id="search" type="search" placeholder="Search heroes…" autocomplete="off" spellcheck="false">
     <div class="sort-wrap">
       <button id="btn-sort">Sort by kills</button>
-      <span id="sort-label">sorted by closest</span>
     </div>
     <button id="btn-reset">Reset all</button>
+  </div>
+  <div class="sort-label-wrap">
+    <span id="sort-label">sorted by closest</span>
   </div>
   <div class="grid" id="grid"></div>
 
