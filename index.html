@@ -202,6 +202,13 @@
     }
     #btn-reset:hover { border-color: #c23b22; color: #c23b22; }
 
+    .sort-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
     #btn-sort {
       background: none;
       border: 1px solid #2a2a3e;
@@ -215,18 +222,11 @@
     }
     #btn-sort:hover { border-color: #3a3a50; color: #aaa; }
 
-    #btn-sort-cp {
-      background: none;
-      border: 1px solid #2a2a3e;
-      border-radius: 8px;
-      color: #444;
-      font-size: 0.8rem;
-      padding: 8px 14px;
-      cursor: pointer;
-      transition: border-color 0.15s, color 0.15s;
+    #sort-label {
+      font-size: 0.65rem;
+      color: #2e2e42;
       white-space: nowrap;
     }
-    #btn-sort-cp:hover { border-color: #3a3a50; color: #aaa; }
 
     .card.hidden { display: none; }
 
@@ -280,8 +280,10 @@
   <h1>Kill Tracker</h1>
   <div class="search-wrap">
     <input id="search" type="search" placeholder="Search heroes…" autocomplete="off" spellcheck="false">
-    <button id="btn-sort">Sort by kills</button>
-    <button id="btn-sort-cp">Sort by closest</button>
+    <div class="sort-wrap">
+      <button id="btn-sort">Sort by kills</button>
+      <span id="sort-label">sorted by closest</span>
+    </div>
     <button id="btn-reset">Reset all</button>
   </div>
   <div class="grid" id="grid"></div>
@@ -557,7 +559,11 @@
       searchEl.focus();
     });
 
-    document.getElementById('btn-sort').addEventListener('click', () => {
+    let sortMode = 'closest'; // 'closest' | 'kills'
+    const btnSort = document.getElementById('btn-sort');
+    const sortLabel = document.getElementById('sort-label');
+
+    function sortByKills() {
       const cards = Array.from(grid.children).filter(c => !c.classList.contains('hidden'));
       const firsts = new Map();
       cards.forEach(card => firsts.set(card.id, card.getBoundingClientRect()));
@@ -578,9 +584,21 @@
           card.style.transform = '';
         });
       }));
-    });
+    }
 
-    document.getElementById('btn-sort-cp').addEventListener('click', () => sortAndAnimate(true));
+    btnSort.addEventListener('click', () => {
+      if (sortMode === 'closest') {
+        sortByKills();
+        sortMode = 'kills';
+        btnSort.textContent = 'Sort by closest';
+        sortLabel.textContent = 'sorted by kills';
+      } else {
+        sortAndAnimate(true);
+        sortMode = 'closest';
+        btnSort.textContent = 'Sort by kills';
+        sortLabel.textContent = 'sorted by closest';
+      }
+    });
 
     const modalOverlay = document.getElementById('modal-overlay');
     document.getElementById('btn-reset').addEventListener('click', () => modalOverlay.classList.add('open'));
