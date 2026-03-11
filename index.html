@@ -222,17 +222,31 @@
     }
     #btn-sort:hover { border-color: #3a3a50; color: #aaa; }
 
-    /* label moved below controls */
-    .sort-label-wrap {
-      text-align: center;
-      margin-top: 4px;
-    }
-
-    #sort-label {
-      font-size: 0.65rem;
-      color: #2e2e42;
+    /* toast-like label that appears briefly at top center */
+    .sort-label-toast {
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #16161f;
+      border: 1px solid #2a2a3e;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 0.75rem;
+      color: #e0e0e0;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      z-index: 200;
       white-space: nowrap;
     }
+    .sort-label-toast.visible { opacity: 1; }
+
+    /* remove extra gap around control row */
+    .search-wrap { margin-bottom: 16px; }
+
+    /* hide original label element if ever used */
+    #sort-label { display: none; }
 
     .card.hidden { display: none; }
 
@@ -291,9 +305,8 @@
     </div>
     <button id="btn-reset">Reset all</button>
   </div>
-  <div class="sort-label-wrap">
-    <span id="sort-label">sorted by closest</span>
-  </div>
+  <!-- toast notification for sort state -->
+  <div id="sort-label-toast" class="sort-label-toast">sorted by closest</div>
   <div class="grid" id="grid"></div>
 
   <div class="modal-overlay" id="modal-overlay">
@@ -554,6 +567,8 @@
       updateCard(h.id);
     });
     sortAndAnimate(false);
+    // initial notification
+    showSortLabel('sorted by closest');
 
     document.getElementById('search').addEventListener('input', applyFilter);
 
@@ -569,7 +584,14 @@
 
     let sortMode = 'closest'; // 'closest' | 'kills'
     const btnSort = document.getElementById('btn-sort');
-    const sortLabel = document.getElementById('sort-label');
+    const toast = document.getElementById('sort-label-toast');
+
+    function showSortLabel(text) {
+      toast.textContent = text;
+      toast.classList.add('visible');
+      clearTimeout(toast._timeout);
+      toast._timeout = setTimeout(() => toast.classList.remove('visible'), 1500);
+    }
 
     function sortByKills() {
       const cards = Array.from(grid.children).filter(c => !c.classList.contains('hidden'));
@@ -599,12 +621,12 @@
         sortByKills();
         sortMode = 'kills';
         btnSort.textContent = 'Sort by closest';
-        sortLabel.textContent = 'sorted by kills';
+        showSortLabel('sorted by kills');
       } else {
         sortAndAnimate(true);
         sortMode = 'closest';
         btnSort.textContent = 'Sort by kills';
-        sortLabel.textContent = 'sorted by closest';
+        showSortLabel('sorted by closest');
       }
     });
 
